@@ -1,0 +1,1748 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>BlockVerse — Coin Tycoon 3D</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap');
+:root{
+  --bg:#e2e4e8; --panel:#ffffff; --panel-edge:#c7cbd3; --ink:#20242c; --ink-soft:#6b7280;
+  --accent:#2f8fe0; --accent-dark:#1f6fb8; --gold:#f2b705; --gold-dark:#c98e00; --green:#2eb872; --danger:#e0523f;
+  --radius:10px; --font-display:'Rubik','Segoe UI',sans-serif; --font-body:'Inter','Segoe UI',sans-serif;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html,body{ width:100%; height:100%; background:var(--bg); font-family:var(--font-body); color:var(--ink); overflow:hidden; }
+
+body, button, a, .clickable{
+  cursor:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28"><polygon points="3,2 3,22 8,17.5 11.5,25 15,23.5 11.7,16.3 19,16 3,2" fill="white" stroke="black" stroke-width="2" stroke-linejoin="round"/></svg>') 3 2, auto;
+}
+button:hover, a:hover, .clickable:hover{
+  cursor:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 28 28"><polygon points="3,2 3,22 8,17.5 11.5,25 15,23.5 11.7,16.3 19,16 3,2" fill="%232f8fe0" stroke="black" stroke-width="2" stroke-linejoin="round"/></svg>') 3 2, pointer;
+}
+
+.screen{ width:100vw; height:100vh; display:none; }
+.screen.active{ display:block; }
+input, textarea{ cursor:text; }
+
+/* ================= AUTH ================= */
+#authScreen{ display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#1f6fb8,#2f8fe0); }
+#authScreen.active{ display:flex; }
+.auth-card{ width:360px; max-width:90vw; background:var(--panel); border-radius:14px; padding:32px 28px; box-shadow:0 20px 50px rgba(0,0,0,0.25); }
+.auth-logo{ display:flex; align-items:center; gap:10px; justify-content:center; margin-bottom:22px; }
+.auth-tabs{ display:flex; background:#eef0f3; border-radius:10px; padding:4px; margin-bottom:20px; }
+.auth-tab{ flex:1; border:none; background:transparent; padding:9px 0; border-radius:8px; font-weight:700; font-size:13.5px; color:var(--ink-soft); }
+.auth-tab.active{ background:var(--panel); color:var(--accent); box-shadow:0 1px 4px rgba(0,0,0,0.12); }
+.auth-field{ margin-bottom:14px; }
+.auth-field label{ display:block; font-size:12px; font-weight:700; color:var(--ink-soft); margin-bottom:5px; }
+.auth-field input{ width:100%; padding:10px 12px; border:1px solid var(--panel-edge); border-radius:8px; font-size:14px; font-family:var(--font-body); }
+.auth-field input:focus{ outline:2px solid var(--accent); border-color:var(--accent); }
+.auth-submit{ width:100%; border:none; background:var(--accent); color:white; font-weight:800; font-size:14.5px; padding:12px 0; border-radius:9px; margin-top:6px; }
+.auth-submit:hover{ background:var(--accent-dark); }
+.auth-error{ background:#fdeceb; color:var(--danger); font-size:12.5px; font-weight:600; padding:9px 12px; border-radius:8px; margin-bottom:12px; display:none; }
+.auth-error.show{ display:block; }
+.auth-setup{ font-size:12.5px; color:var(--ink-soft); line-height:1.6; background:#fff7e0; border:1px solid #f0d488; border-radius:8px; padding:12px 14px; }
+.auth-loading{ color:white; font-weight:700; font-size:15px; }
+.gender-btn{ flex:1; border:2px solid; border-radius:10px; padding:13px 0; font-weight:800; font-size:16px; background:white; }
+.gender-btn.male{ border-color:#2f8fe0; color:#2f8fe0; }
+.gender-btn.female{ border-color:#ec4899; color:#ec4899; }
+.gender-btn.male.selected{ background:#2f8fe0; color:white; }
+.gender-btn.female.selected{ background:#ec4899; color:white; }
+#authBirthField select{ flex:1; padding:9px 6px; border:1px solid var(--panel-edge); border-radius:8px; font-size:13px; font-family:var(--font-body); background:white; }
+
+/* ================= HOME ================= */
+#home{ overflow-y:auto; }
+.topbar{ display:flex; align-items:center; gap:16px; background:var(--panel); padding:14px 28px; border-bottom:1px solid var(--panel-edge); position:sticky; top:0; z-index:10; }
+.logo-mark{ width:34px; height:34px; border-radius:8px; background:linear-gradient(135deg,var(--accent),var(--accent-dark)); display:flex; align-items:center; justify-content:center; color:white; font-family:var(--font-display); font-weight:900; font-size:18px; }
+.logo-word{ font-family:var(--font-display); font-weight:900; font-size:20px; letter-spacing:0.5px; }
+.logo-word span{ color:var(--accent); }
+.topbar-spacer{ flex:1; }
+.topbar-right{ display:flex; align-items:center; gap:14px; }
+.currency-pill{ display:flex; align-items:center; gap:6px; background:#fff7e0; border:1px solid #f0d488; padding:6px 12px; border-radius:20px; font-weight:700; font-size:14px; color:var(--gold-dark); }
+.coin-dot{ width:16px; height:16px; border-radius:50%; background:radial-gradient(circle at 35% 30%, #ffe388, var(--gold)); border:1px solid var(--gold-dark); }
+.nav-btn{ display:flex; align-items:center; gap:6px; background:var(--panel); border:1px solid var(--panel-edge); color:var(--ink); font-weight:700; font-size:13px; padding:7px 13px; border-radius:18px; }
+.nav-btn:hover{ border-color:var(--accent); color:var(--accent); }
+.nav-btn.logout{ color:var(--danger); }
+.profile-block{ display:flex; align-items:center; gap:10px; }
+.avatar-circle-wrap{ width:38px; height:38px; border-radius:50%; overflow:hidden; border:2px solid var(--panel-edge); background:#d9d9d9; flex:0 0 auto; }
+.avatar-circle-wrap img{ width:100%; height:100%; object-fit:cover; display:block; }
+.username{ font-weight:700; font-size:14px; }
+
+.hero-strip{ padding:26px 28px 10px 28px; }
+.hero-strip h1{ font-family:var(--font-display); font-size:26px; font-weight:900; }
+.hero-strip p{ color:var(--ink-soft); margin-top:4px; font-size:14px; }
+
+.showroom-box{ width:220px; height:220px; margin:6px 28px 6px 28px; border-radius:50%; overflow:hidden; background:#d9d9d9; border:1px solid var(--panel-edge); }
+.showroom-box img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+.section-title{ padding:22px 28px 10px 28px; font-family:var(--font-display); font-weight:700; font-size:15px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.6px; display:flex; justify-content:space-between; align-items:center; }
+.section-title .see-all{ color:var(--accent); font-size:12px; font-weight:700; text-transform:none; letter-spacing:0; }
+.games-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:18px; padding:6px 28px 40px 28px; }
+.game-card{ background:var(--panel); border-radius:var(--radius); overflow:hidden; border:1px solid var(--panel-edge); transition:transform .18s ease, box-shadow .18s ease; position:relative; }
+.game-card:hover{ transform:translateY(-4px); box-shadow:0 10px 24px rgba(20,30,50,0.16); }
+.game-cover{ width:100%; aspect-ratio:16/10; display:flex; align-items:center; justify-content:center; color:white; font-family:var(--font-display); font-weight:900; font-size:15px; text-align:center; padding:10px; }
+.game-card.tycoon .game-cover{ background:linear-gradient(135deg,#3a3f8f,#2f8fe0); }
+.game-card.parkour .game-cover{ background:linear-gradient(135deg,#2eb872,#1f8f56); }
+.game-card.soon .game-cover{ background:linear-gradient(135deg,#8a8f99,#c7cbd3); color:#f4f5f7; }
+.game-info{ padding:10px 12px 12px 12px; }
+.game-name{ font-weight:700; font-size:13.5px; margin-bottom:6px; }
+.game-meta{ display:flex; justify-content:space-between; font-size:11.5px; color:var(--ink-soft); }
+.game-meta .likes{ color:var(--green); font-weight:600; }
+.badge{ position:absolute; top:8px; left:8px; background:var(--danger); color:white; font-size:10px; font-weight:700; padding:3px 7px; border-radius:5px; }
+
+/* ================= GAME (shared HUD styles for tycoon + parkour) ================= */
+.game-screen{ position:relative; background:#7fb9e8; }
+.game-hud{ position:absolute; top:0; left:0; right:0; z-index:5; display:flex; align-items:center; gap:14px; padding:12px 18px; background:linear-gradient(to bottom, rgba(20,24,32,0.85), rgba(20,24,32,0)); pointer-events:none; }
+.game-hud > *{ pointer-events:auto; }
+.hud-back{ background:rgba(255,255,255,0.92); border:none; border-radius:8px; padding:8px 12px; font-weight:700; font-size:13px; color:var(--ink); }
+.hud-cash{ background:rgba(255,255,255,0.95); border-radius:20px; padding:8px 16px; font-weight:800; font-size:15px; color:var(--gold-dark); display:flex; align-items:center; gap:8px; }
+.hud-rate{ font-size:12px; font-weight:600; color:var(--green); }
+.hud-spacer{ flex:1; }
+.hud-title{ color:white; font-family:var(--font-display); font-weight:700; font-size:14px; text-shadow:0 1px 3px rgba(0,0,0,0.5); }
+.hud-hint{ position:absolute; top:56px; right:18px; z-index:5; color:white; font-size:11.5px; background:rgba(20,24,32,0.55); padding:6px 10px; border-radius:6px; text-align:right; line-height:1.5; }
+.hud-timer{ background:rgba(255,255,255,0.95); border-radius:20px; padding:8px 16px; font-weight:800; font-size:15px; color:var(--accent-dark); }
+canvas.game-canvas{ display:block; width:100%; height:100%; }
+.prompt-box{ position:absolute; left:50%; bottom:60px; transform:translateX(-50%); background:rgba(20,24,32,0.88); color:white; padding:10px 18px; border-radius:8px; font-weight:600; font-size:14px; display:none; z-index:6; text-align:center; }
+.prompt-box.show{ display:block; }
+.prompt-box .key{ display:inline-block; background:white; color:var(--ink); font-weight:800; padding:1px 7px; border-radius:4px; margin:0 4px; }
+.plot-label3d{ position:absolute; transform:translate(-50%,-50%); background:rgba(20,24,32,0.65); color:#ffe9a8; font-weight:700; font-size:11px; padding:3px 7px; border-radius:5px; pointer-events:none; display:none; white-space:nowrap; z-index:4; }
+.finish-overlay{ position:absolute; inset:0; background:rgba(20,24,32,0.72); display:none; align-items:center; justify-content:center; z-index:20; }
+.finish-overlay.show{ display:flex; }
+.finish-card{ background:white; border-radius:14px; padding:32px 36px; text-align:center; max-width:320px; }
+.finish-card h2{ font-family:var(--font-display); font-size:22px; margin-bottom:8px; }
+.finish-card p{ color:var(--ink-soft); margin-bottom:20px; font-size:14px; }
+.finish-actions{ display:flex; gap:10px; }
+.finish-actions button{ flex:1; border:none; border-radius:9px; padding:11px 0; font-weight:800; font-size:13.5px; }
+.finish-actions .again{ background:var(--accent); color:white; }
+.finish-actions .home{ background:#eef0f3; color:var(--ink); }
+
+.mobile-controls{ display:none; }
+.mobile-jump{ display:none; }
+@media (pointer:coarse){
+  .mobile-controls{ display:block; position:absolute; bottom:26px; left:26px; z-index:6; }
+  .joy-base{ width:120px; height:120px; border-radius:50%; background:rgba(255,255,255,0.25); border:2px solid rgba(255,255,255,0.5); position:relative; }
+  .joy-stick{ width:50px; height:50px; border-radius:50%; background:rgba(255,255,255,0.85); position:absolute; top:35px; left:35px; }
+  .mobile-jump{ display:block; position:absolute; bottom:100px; right:26px; z-index:6; background:rgba(255,255,255,0.85); color:var(--ink); border:none; border-radius:50%; width:56px; height:56px; font-weight:800; font-size:11px; }
+  .mobile-buy{ position:absolute; bottom:26px; right:26px; z-index:6; background:var(--accent); color:white; border:none; border-radius:50%; width:64px; height:64px; font-weight:800; font-size:12px; }
+}
+
+/* ================= MARKETPLACE / SHARED ROW STYLES ================= */
+.sub-screen{ overflow-y:auto; }
+.sub-topbar{ display:flex; align-items:center; gap:14px; background:var(--panel); padding:14px 28px; border-bottom:1px solid var(--panel-edge); position:sticky; top:0; z-index:10; }
+.sub-topbar h2{ font-family:var(--font-display); font-size:18px; font-weight:900; }
+.sub-topbar .topbar-spacer{ flex:1; }
+.cat-tabs{ display:flex; gap:10px; padding:16px 28px 4px 28px; overflow-x:auto; }
+.cat-tab{ flex:0 0 auto; background:var(--panel); border:1px solid var(--panel-edge); color:var(--ink-soft); font-weight:700; font-size:13px; padding:8px 16px; border-radius:20px; white-space:nowrap; }
+.cat-tab.active{ background:var(--accent); color:white; border-color:var(--accent); }
+.market-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(170px,1fr)); gap:16px; padding:18px 28px 40px 28px; }
+.item-card{ background:var(--panel); border:1px solid var(--panel-edge); border-radius:var(--radius); overflow:hidden; transition:transform .15s ease, box-shadow .15s ease; }
+.item-card:hover{ transform:translateY(-3px); box-shadow:0 8px 18px rgba(20,30,50,0.14); }
+.item-icon{ width:100%; aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; }
+.item-icon img{ width:78%; height:78%; object-fit:contain; }
+.item-body{ padding:10px 12px 12px 12px; }
+.item-name{ font-weight:700; font-size:13px; margin-bottom:8px; min-height:32px; }
+.item-buy{ width:100%; border:none; border-radius:8px; padding:8px 0; font-weight:800; font-size:12.5px; background:var(--accent); color:white; }
+.item-buy.owned{ background:#e6f7ee; color:var(--green); }
+.item-buy.cant{ background:#f1f2f4; color:var(--ink-soft); }
+.inv-empty{ padding:40px 10px; text-align:center; color:var(--ink-soft); font-size:14px; }
+.inv-list{ display:flex; flex-direction:column; gap:10px; padding:18px 28px 40px 28px; }
+.inv-row{ display:flex; align-items:center; gap:14px; background:var(--panel); border:1px solid var(--panel-edge); border-radius:var(--radius); padding:10px 14px; }
+.inv-icon{ width:44px; height:44px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex:0 0 auto; overflow:hidden; }
+.inv-icon img{ width:82%; height:82%; object-fit:contain; }
+.inv-info{ flex:1; }
+.inv-info .n{ font-weight:700; font-size:13.5px; }
+.inv-info .c{ font-size:11.5px; color:var(--ink-soft); }
+.inv-toggle{ border:none; border-radius:16px; padding:7px 14px; font-weight:700; font-size:12px; }
+.inv-toggle.on{ background:var(--accent); color:white; }
+.inv-toggle.off{ background:#f1f2f4; color:var(--ink); }
+.toast{ position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--ink); color:white; padding:10px 20px; border-radius:24px; font-weight:600; font-size:13.5px; opacity:0; pointer-events:none; transition:opacity .25s ease, transform .25s ease; z-index:50; }
+.toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* ================= AVATAR EDITOR (360 showroom) ================= */
+.avatar-editor-layout{ display:flex; gap:24px; padding:22px 28px 40px 28px; align-items:flex-start; flex-wrap:wrap; }
+.avatar-preview-box{ width:320px; height:380px; border-radius:var(--radius); overflow:hidden; background:linear-gradient(180deg,#bfe3fb,#8ecbf0); border:1px solid var(--panel-edge); flex:0 0 auto; }
+#avatarCanvas{ width:100%; height:100%; display:block; }
+.avatar-picker{ flex:1; min-width:280px; }
+.avatar-hint{ font-size:11.5px; color:var(--ink-soft); text-align:center; padding-top:6px; }
+@media (max-width:680px){ .avatar-preview-box{ width:100%; height:300px; } }
+</style>
+</head>
+<body>
+
+<div id="modelLoadingOverlay" style="position:fixed; inset:0; background:#1f6fb8; color:white; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:9999; font-family:'Inter','Segoe UI',sans-serif; padding:20px;">
+  <div style="font-size:18px; font-weight:700;" id="modelLoadingText">Karakter modeli yükleniyor...</div>
+  <div style="font-size:13px; margin-top:8px; opacity:0.85; max-width:380px; text-align:center;" id="modelLoadingSub">r6_rigged.fbx ve Head1_diff.png dosyaları HTML ile aynı klasörde olmalı.</div>
+  <div id="modelLoadingSteps" style="font-size:11.5px; margin-top:16px; opacity:0.75; max-width:420px; text-align:left; font-family:monospace; white-space:pre-wrap;"></div>
+  <pre id="modelLoadingErrorBox" style="display:none; margin-top:16px; max-width:520px; max-height:220px; overflow:auto; background:rgba(0,0,0,0.35); padding:12px 14px; border-radius:8px; font-size:11.5px; text-align:left; white-space:pre-wrap; word-break:break-word;"></pre>
+</div>
+
+<!-- ================= AUTH (geçici yerel sistem) ================= -->
+<div id="authScreen" class="screen active">
+  <div class="auth-card" id="authCard">
+    <div class="auth-logo">
+      <div class="logo-mark">B</div>
+      <div class="logo-word">Block<span>Verse</span></div>
+    </div>
+    <div class="auth-setup" style="margin-bottom:16px;">
+      Bu sürümde hesaplar <b>geçici olarak</b> bu sekmenin hafızasında tutuluyor (sayfayı yenilersen sıfırlanır). Gerçek/kalıcı hale getirmek istediğinde Firebase'e bağlarız.
+    </div>
+    <div id="authFormWrap">
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Giriş Yap</button>
+        <button class="auth-tab" id="tabRegister" onclick="switchAuthTab('register')">Kayıt Ol</button>
+      </div>
+      <div class="auth-error" id="authError"></div>
+      <div class="auth-field"><label>Kullanıcı Adı</label><input type="text" id="authUsername" placeholder="kullaniciadi" autocomplete="username"></div>
+      <div class="auth-field" id="authBirthField" style="display:none;">
+        <label>Doğum Tarihi</label>
+        <div style="display:flex; gap:6px;">
+          <select id="authBirthMonth"></select>
+          <select id="authBirthDay"></select>
+          <select id="authBirthYear"></select>
+        </div>
+      </div>
+      <div class="auth-field"><label>Şifre</label><input type="password" id="authPassword" placeholder="En az 6 karakter" autocomplete="current-password"></div>
+      <div class="auth-field" id="authGenderField" style="display:none;">
+        <label>Cinsiyet</label>
+        <div style="display:flex; gap:10px;">
+          <button type="button" class="gender-btn male clickable" id="genderMaleBtn" onclick="selectGender('male')">♂ Erkek</button>
+          <button type="button" class="gender-btn female clickable" id="genderFemaleBtn" onclick="selectGender('female')">♀ Kadın</button>
+        </div>
+      </div>
+      <button class="auth-submit clickable" id="authSubmitBtn" onclick="submitAuthForm()">Giriş Yap</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= HOME SCREEN ================= -->
+<div id="home" class="screen">
+  <div class="topbar">
+    <div class="logo-mark">B</div>
+    <div class="logo-word">Block<span>Verse</span></div>
+    <div class="topbar-spacer"></div>
+    <div class="topbar-right">
+      <div class="currency-pill"><div class="coin-dot"></div><span id="robuxDisplay">450</span></div>
+      <button class="nav-btn clickable" onclick="openMarketplace()">Mağaza</button>
+      <button class="nav-btn clickable" onclick="openAvatarEditor()">Avatar</button>
+      <button class="nav-btn logout clickable" onclick="logoutUser()">Çıkış</button>
+      <div class="profile-block">
+        <div class="avatar-circle-wrap"><img id="navFace" alt="Profil"></div>
+        <span class="username" id="usernameDisplay">Oyuncu</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-strip">
+    <h1>Hoş geldin!</h1>
+    <p>Oynamaya devam et veya yeni bir dünya keşfet.</p>
+  </div>
+
+  <div class="showroom-box"><img id="showroomFace" alt="Karakterin"></div>
+
+  <div class="section-title">Oyunlar</div>
+  <div class="games-grid" id="gamesGrid">
+    <div class="game-card tycoon clickable" onclick="startTycoon()">
+      <span class="badge">3D</span>
+      <div class="game-cover">COIN<br>TYCOON 3D</div>
+      <div class="game-info">
+        <div class="game-name">Coin Tycoon 3D</div>
+        <div class="game-meta"><span class="likes">98% 👍</span><span>👤 1</span></div>
+      </div>
+    </div>
+    <div class="game-card parkour clickable" onclick="startParkour()">
+      <span class="badge">YENİ</span>
+      <div class="game-cover">PARKOUR<br>RUSH</div>
+      <div class="game-info">
+        <div class="game-name">Parkour Rush</div>
+        <div class="game-meta"><span class="likes">95% 👍</span><span>👤 1</span></div>
+      </div>
+    </div>
+    <div class="game-card soon"><div class="game-cover">YAKINDA</div><div class="game-info"><div class="game-name">Sky Parkour</div><div class="game-meta"><span>—</span><span>👤 0</span></div></div></div>
+    <div class="game-card soon"><div class="game-cover">YAKINDA</div><div class="game-info"><div class="game-name">Battle Arena</div><div class="game-meta"><span>—</span><span>👤 0</span></div></div></div>
+  </div>
+</div>
+
+<!-- ================= TYCOON GAME (3D) ================= -->
+<div id="game" class="screen game-screen">
+  <div class="game-hud">
+    <button class="hud-back clickable" onclick="goHome()">← Ana Sayfa</button>
+    <div class="hud-title">Coin Tycoon 3D</div>
+    <div class="hud-spacer"></div>
+    <div class="hud-cash"><div class="coin-dot"></div><span id="cashDisplay">0</span><span class="hud-rate" id="rateDisplay">(+0/sn)</span></div>
+  </div>
+  <div class="hud-hint">WASD hareket · Sağ tık basılı + fare: kamera · Tekerlek: zoom · Space zıpla · E satın al</div>
+  <canvas id="gameCanvas3d" class="game-canvas"></canvas>
+  <div class="prompt-box" id="promptBox"></div>
+  <div class="mobile-controls"><div class="joy-base" id="joyBase"><div class="joy-stick" id="joyStick"></div></div></div>
+  <button class="mobile-jump clickable" onclick="doJump(tycoonState)">ZIPLA</button>
+  <button class="mobile-buy clickable" id="mobileBuyBtn" style="display:none;" onclick="tryBuy()">SATIN AL</button>
+</div>
+
+<!-- ================= PARKOUR GAME (3D) ================= -->
+<div id="parkourGame" class="screen game-screen">
+  <div class="game-hud">
+    <button class="hud-back clickable" onclick="goHome()">← Ana Sayfa</button>
+    <div class="hud-title">Parkour Rush</div>
+    <div class="hud-spacer"></div>
+    <div class="hud-timer" id="parkourTimer">0.0 sn</div>
+  </div>
+  <div class="hud-hint">WASD hareket · Sağ tık basılı + fare: kamera · Tekerlek: zoom · Space zıpla</div>
+  <canvas id="parkourCanvas3d" class="game-canvas"></canvas>
+  <div class="mobile-controls"><div class="joy-base" id="joyBaseParkour"><div class="joy-stick" id="joyStickParkour"></div></div></div>
+  <button class="mobile-jump clickable" onclick="doJump(parkourState)">ZIPLA</button>
+  <div class="finish-overlay" id="parkourFinishOverlay">
+    <div class="finish-card">
+      <h2>🏁 Parkuru Tamamladın!</h2>
+      <p id="parkourFinishTime">Süre: 0.0 sn</p>
+      <div class="finish-actions">
+        <button class="again clickable" onclick="restartParkour()">Tekrar Oyna</button>
+        <button class="home clickable" onclick="goHome()">Ana Sayfa</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MARKETPLACE ================= -->
+<div id="marketplace" class="screen sub-screen">
+  <div class="sub-topbar">
+    <button class="hud-back clickable" onclick="goHome()">← Ana Sayfa</button>
+    <h2>Mağaza</h2>
+    <div class="topbar-spacer"></div>
+    <div class="currency-pill"><div class="coin-dot"></div><span id="robuxDisplayMarket">450</span></div>
+  </div>
+  <div class="cat-tabs" id="catTabs"></div>
+  <div class="market-grid" id="marketGrid"></div>
+</div>
+
+<!-- ================= AVATAR EDITOR (360 showroom) ================= -->
+<div id="avatarScreen" class="screen sub-screen">
+  <div class="sub-topbar">
+    <button class="hud-back clickable" onclick="goHome()">← Ana Sayfa</button>
+    <h2>Avatar Düzenleyici</h2>
+    <div class="topbar-spacer"></div>
+  </div>
+  <div class="avatar-editor-layout">
+    <div>
+      <div class="avatar-preview-box"><canvas id="avatarCanvas"></canvas></div>
+      <div class="avatar-hint">Sürükleyerek 360° döndür</div>
+    </div>
+    <div class="avatar-picker">
+      <div class="cat-tabs" id="avatarCatTabs"></div>
+      <div id="avatarItemList" class="inv-list"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/libs/fflate.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js"></script>
+<script>
+/* ============================================================
+   TANI / HATA YAKALAYICI — herhangi bir yerde çıkan hatayı doğrudan
+   ekranda gösterir, F12 konsoluna gerek kalmaz.
+   ============================================================ */
+function logStep(msg){
+  const el = document.getElementById('modelLoadingSteps');
+  if(el) el.textContent += msg + '\n';
+  console.log('[R6]', msg);
+}
+function showLoadError(title, detail){
+  const overlay = document.getElementById('modelLoadingOverlay');
+  const box = document.getElementById('modelLoadingErrorBox');
+  if(!overlay || !box) return;
+  overlay.style.display = 'flex';
+  document.getElementById('modelLoadingText').textContent = title;
+  box.style.display = 'block';
+  box.textContent += detail + '\n\n';
+}
+window.addEventListener('error', function(e){
+  showLoadError('Bir JavaScript hatası oluştu.', '[Genel Hata] ' + e.message + '\nDosya: ' + e.filename + ':' + e.lineno);
+});
+logStep('Script başladı. THREE mevcut mu? ' + (typeof THREE !== 'undefined'));
+if(typeof THREE !== 'undefined'){
+  logStep('THREE.FBXLoader mevcut mu? ' + (typeof THREE.FBXLoader !== 'undefined'));
+  logStep('THREE.SkeletonUtils mevcut mu? ' + (typeof THREE.SkeletonUtils !== 'undefined'));
+}
+
+/* ============================================================
+   GEÇİCİ YEREL GİRİŞ SİSTEMİ (Firebase yok — hesaplar bu sekmenin
+   hafızasında tutulur, sayfa yenilenince sıfırlanır). İleride gerçek/
+   kalıcı hale getirmek istenirse bu fonksiyonlar Firebase ile değiştirilebilir.
+   ============================================================ */
+const mockAccounts = {}; // key: kullanıcı adı (küçük harf) -> hesap verisi
+let currentUsername = null;
+
+let authMode = 'login';
+let selectedGender = null;
+function selectGender(g){
+  selectedGender = g;
+  document.getElementById('genderMaleBtn').classList.toggle('selected', g==='male');
+  document.getElementById('genderFemaleBtn').classList.toggle('selected', g==='female');
+}
+function populateBirthSelects(){
+  const monthSel = document.getElementById('authBirthMonth');
+  const daySel = document.getElementById('authBirthDay');
+  const yearSel = document.getElementById('authBirthYear');
+  if(monthSel.options.length) return;
+  const months = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+  monthSel.innerHTML = '<option value="">Ay</option>' + months.map((m,i)=>`<option value="${i+1}">${m}</option>`).join('');
+  daySel.innerHTML = '<option value="">Gün</option>' + Array.from({length:31},(_,i)=>`<option value="${i+1}">${i+1}</option>`).join('');
+  const nowYear = new Date().getFullYear();
+  let yearOpts = '<option value="">Yıl</option>';
+  for(let y=nowYear-5; y>=nowYear-90; y--) yearOpts += `<option value="${y}">${y}</option>`;
+  yearSel.innerHTML = yearOpts;
+}
+function switchAuthTab(mode){
+  authMode = mode;
+  document.getElementById('tabLogin').classList.toggle('active', mode==='login');
+  document.getElementById('tabRegister').classList.toggle('active', mode==='register');
+  document.getElementById('authSubmitBtn').textContent = mode==='login' ? 'Giriş Yap' : 'Kayıt Ol';
+  document.getElementById('authError').classList.remove('show');
+  const isRegister = mode === 'register';
+  document.getElementById('authBirthField').style.display = isRegister ? 'block' : 'none';
+  document.getElementById('authGenderField').style.display = isRegister ? 'block' : 'none';
+  if(isRegister) populateBirthSelects();
+}
+function showAuthError(msg){
+  const el = document.getElementById('authError');
+  el.textContent = msg;
+  el.classList.add('show');
+}
+function mockDefaultAccount(profile){
+  return {
+    password: profile.password,
+    displayName: profile.username,
+    birthMonth: profile.birthMonth, birthDay: profile.birthDay, birthYear: profile.birthYear,
+    gender: profile.gender,
+    robux: 450,
+    inventory: { fc1:true, cl1:true, hr1:true },
+    equipped: { Hats:null, Hair:'hr1', Faces:'fc1', Accessories:null, Clothing:'cl1' }
+  };
+}
+function submitAuthForm(){
+  const username = document.getElementById('authUsername').value.trim();
+  const pass = document.getElementById('authPassword').value;
+  document.getElementById('authError').classList.remove('show');
+  if(!username || !pass){ showAuthError('Kullanıcı adı ve şifre gerekli.'); return; }
+  if(username.length < 3){ showAuthError('Kullanıcı adı en az 3 karakter olmalı.'); return; }
+  const key = username.toLowerCase();
+
+  if(authMode === 'login'){
+    const acc = mockAccounts[key];
+    if(!acc){ showAuthError('Bu kullanıcı adıyla kayıtlı bir hesap yok.'); return; }
+    if(acc.password !== pass){ showAuthError('Şifre hatalı.'); return; }
+    logInToAccount(key, acc);
+  } else {
+    if(pass.length < 6){ showAuthError('Şifre en az 6 karakter olmalı.'); return; }
+    if(mockAccounts[key]){ showAuthError('Bu kullanıcı adı zaten alınmış. Giriş Yap sekmesini dene.'); return; }
+    const month = document.getElementById('authBirthMonth').value;
+    const day = document.getElementById('authBirthDay').value;
+    const year = document.getElementById('authBirthYear').value;
+    if(!month || !day || !year){ showAuthError('Doğum tarihini (ay/gün/yıl) seç.'); return; }
+    if(!selectedGender){ showAuthError('Cinsiyetini seç.'); return; }
+    const acc = mockDefaultAccount({ username, password:pass, birthMonth:month, birthDay:day, birthYear:year, gender:selectedGender });
+    mockAccounts[key] = acc;
+    logInToAccount(key, acc);
+  }
+}
+function logInToAccount(key, acc){
+  currentUsername = key;
+  robux = acc.robux;
+  Object.keys(inventory).forEach(k=> delete inventory[k]);
+  Object.assign(inventory, acc.inventory);
+  Object.keys(equippedItems).forEach(k=> equippedItems[k]=null);
+  Object.assign(equippedItems, acc.equipped);
+  document.getElementById('usernameDisplay').textContent = acc.displayName;
+  syncRobuxDisplays();
+  updateFacePortraits();
+  hideAllScreens();
+  document.getElementById('home').classList.add('active');
+}
+function saveUserData(){
+  if(!currentUsername) return;
+  const acc = mockAccounts[currentUsername];
+  if(!acc) return;
+  acc.robux = robux;
+  acc.inventory = Object.assign({}, inventory);
+  acc.equipped = Object.assign({}, equippedItems);
+}
+function logoutUser(){
+  currentUsername = null;
+  hideAllScreens();
+  document.getElementById('authScreen').classList.add('active');
+}
+
+/* ============ SHARED STATE ============ */
+let robux = 450;
+const robuxDisplay = document.getElementById('robuxDisplay');
+const robuxDisplayMarket = document.getElementById('robuxDisplayMarket');
+function syncRobuxDisplays(){ robuxDisplay.textContent = Math.floor(robux); robuxDisplayMarket.textContent = Math.floor(robux); }
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=> t.classList.remove('show'), 2200);
+}
+function hideAllScreens(){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); }
+
+/* ============ NAVIGATION ============ */
+function goHome(){
+  hideAllScreens();
+  document.getElementById('home').classList.add('active');
+}
+function openMarketplace(){
+  hideAllScreens();
+  document.getElementById('marketplace').classList.add('active');
+  renderMarketplace();
+}
+function openAvatarEditor(){
+  hideAllScreens();
+  document.getElementById('avatarScreen').classList.add('active');
+  initAvatarEditorOnce();
+  resizeAvatarCanvas();
+  renderAvatarPicker();
+}
+
+/* ============ MARKETPLACE DATA (emoji yok — gerçek 3D geometri, paketler kaldırıldı) ============ */
+const categories = ["Hats","Hair","Faces","Accessories","Clothing"];
+const categoryLabels = { Hats:"Şapkalar", Hair:"Saçlar", Faces:"Yüzler", Accessories:"Aksesuarlar", Clothing:"Kıyafetler" };
+const marketplaceItems = [
+  {id:'ht1', cat:'Hats', name:'Kaptan Şapkası', price:120, bg:'#3a3f8f'},
+  {id:'ht2', cat:'Hats', name:'Taç', price:340, bg:'#c98e00'},
+  {id:'ht3', cat:'Hats', name:'Bere', price:65, bg:'#e0523f'},
+  {id:'hr1', cat:'Hair', name:'Siyah Kısa Saç', price:90, bg:'#1a1a1a'},
+  {id:'hr2', cat:'Hair', name:'Sarı Uzun Saç', price:110, bg:'#e8c874'},
+  {id:'hr3', cat:'Hair', name:'Kahve Saç', price:100, bg:'#5a3a22'},
+  {id:'fc1', cat:'Faces', name:'Gülen Yüz', price:40, bg:'#f2b705'},
+  {id:'fc2', cat:'Faces', name:'Havalı Gözlük', price:75, bg:'#20242c'},
+  {id:'fc3', cat:'Faces', name:'Robot Vizör', price:130, bg:'#6b7280'},
+  {id:'ac1', cat:'Accessories', name:'Kanat', price:260, bg:'#e0523f'},
+  {id:'ac2', cat:'Accessories', name:'Sırt Çantası', price:95, bg:'#2f8fe0'},
+  {id:'ac3', cat:'Accessories', name:'Kılıç', price:180, bg:'#c98e00'},
+  {id:'cl1', cat:'Clothing', name:'Ceket', price:140, bg:'#3a3f8f'},
+  {id:'cl2', cat:'Clothing', name:'Zırh', price:220, bg:'#2eb872'},
+  {id:'cl3', cat:'Clothing', name:'Hoodie', price:100, bg:'#e0523f'},
+];
+let activeCategory = 'Hats';
+let avatarActiveCategory = 'Hats';
+const avatarCategories = categories;
+const inventory = {};
+const equippedItems = { Hats:null, Hair:null, Faces:null, Accessories:null, Clothing:null };
+
+/* ============ KARAKTER RIG — gerçek R6 FBX modeli ============ */
+const HEAD_Y = 1.48, TORSO_Y = 0.95, LIMB_TOP = 1.28, LEG_TOP = 0.62;
+
+/* Karakter modelin ters yöne bakıyorsa bunu Math.PI yap */
+const R6_YAW_OFFSET = 0;
+
+let r6Template = null, r6Ready = false, r6LoadFailed = false;
+
+function loadR6Template(onDone){
+  let doneCalled = false;
+  const finish = ()=>{
+    if(doneCalled) return;
+    doneCalled = true;
+    onDone && onDone();
+  };
+  logStep('loadR6Template() çağrıldı.');
+  // Ne olursa olsun 15 saniye içinde kesin bir sonuca ulaşılır (sonsuz "yükleniyor" ekranı olmaz)
+  setTimeout(()=>{
+    if(!doneCalled){
+      showLoadError('Zaman aşımı (15sn).', 'r6_rigged.fbx dosyası sunucudan hiç yanıt vermedi.\nOlası sebep: dosya adı/yolu yanlış ya da sunucu dosyayı hiç servis etmiyor.');
+      r6LoadFailed = true;
+      finish();
+    }
+  }, 15000);
+
+  try{
+    if(typeof THREE.FBXLoader === 'undefined'){
+      showLoadError('FBXLoader yüklenemedi.', 'THREE.FBXLoader tanımsız.\nBu, "FBXLoader.js" veya "fflate.min.js" CDN dosyasının tarayıcıya hiç ulaşmadığı anlamına gelir (ağ engeli, adblock, ya da CDN\'e erişim sorunu olabilir).');
+      r6LoadFailed = true; finish(); return;
+    }
+    if(typeof THREE.SkeletonUtils === 'undefined'){
+      showLoadError('SkeletonUtils yüklenemedi.', 'THREE.SkeletonUtils tanımsız.\n"SkeletonUtils.js" CDN dosyası tarayıcıya ulaşmadı.');
+      r6LoadFailed = true; finish(); return;
+    }
+    logStep('FBXLoader ve SkeletonUtils hazır. r6_rigged.fbx isteniyor...');
+    const loader = new THREE.FBXLoader();
+    loader.load('r6_rigged.fbx', obj=>{
+      logStep('r6_rigged.fbx indirildi ve ayrıştırıldı. İşleniyor...');
+      try{
+        const texLoader = new THREE.TextureLoader();
+        const headTex = texLoader.load('Head1_diff.png',
+          ()=> logStep('Head1_diff.png yüklendi.'),
+          undefined,
+          texErr=> logStep('UYARI: Head1_diff.png yüklenemedi (' + (texErr && texErr.message ? texErr.message : 'bilinmiyor') + '). Devam ediliyor, kafa dokusuz kalabilir.')
+        );
+        if(THREE.sRGBEncoding) headTex.encoding = THREE.sRGBEncoding;
+
+        obj.traverse(o=>{
+          if(o.isMesh){
+            o.castShadow = true; o.receiveShadow = true;
+            const mats = Array.isArray(o.material) ? o.material : [o.material];
+            mats.forEach(m=>{
+              if(!m) return;
+              if(/head/i.test(m.name)){ m.map = headTex; m.needsUpdate = true; }
+            });
+          }
+        });
+
+        const headBone = obj.getObjectByName('Head');
+        const torsoBone = obj.getObjectByName('Torso');
+        if(!headBone || !torsoBone){
+          showLoadError('Kemik bulunamadı.', 'Model içinde "Head" veya "Torso" isimli bir kemik bulunamadı.\nModelin kemik isimleri beklenenden farklı olabilir.');
+          r6LoadFailed = true;
+          finish();
+          return;
+        }
+        const hv = new THREE.Vector3(), tv = new THREE.Vector3();
+        headBone.getWorldPosition(hv);
+        torsoBone.getWorldPosition(tv);
+        // Modelin gerçek Head/Torso kemik konumlarını, mevcut aksesuar sistemimizin
+        // beklediği referans noktalara (HEAD_Y / TORSO_Y) kalibre ediyoruz —
+        // böylece tüm şapka/saç/yüz/aksesuar/kıyafet kodu HİÇ değişmeden çalışmaya devam ediyor.
+        const scale = (HEAD_Y - TORSO_Y) / (hv.y - tv.y);
+        const offsetY = TORSO_Y - scale * tv.y;
+        obj.scale.setScalar(scale);
+        obj.position.y = offsetY;
+
+        const box = new THREE.Box3().setFromObject(obj);
+        const center = box.getCenter(new THREE.Vector3());
+        obj.position.x = -center.x;
+        obj.position.z = -center.z;
+        obj.rotation.y = R6_YAW_OFFSET;
+
+        r6Template = obj;
+        r6Ready = true;
+        logStep('Model hazır. Kalibrasyon: scale=' + scale.toFixed(3) + ', offsetY=' + offsetY.toFixed(3));
+      }catch(e){
+        showLoadError('Model işlenirken hata oluştu.', String(e && e.stack ? e.stack : e));
+        r6LoadFailed = true;
+      }
+      finish();
+    }, undefined, err=>{
+      showLoadError('r6_rigged.fbx yüklenemedi.', String(err && err.message ? err.message : err) + '\nDosyanın HTML ile aynı klasörde, doğru isimde (küçük/büyük harf dahil) olduğundan emin ol.');
+      r6LoadFailed = true;
+      finish();
+    });
+  }catch(e){
+    showLoadError('Beklenmeyen hata.', String(e && e.stack ? e.stack : e));
+    r6LoadFailed = true;
+    finish();
+  }
+}
+
+function shadeColor(hex, percent){
+  const c = new THREE.Color(hex);
+  if(percent < 0) c.multiplyScalar(1 + percent/100);
+  else c.lerp(new THREE.Color(0xffffff), percent/100);
+  return c.getHex();
+}
+
+function buildBaseAvatarGroup(bodyColor){
+  if(!r6Ready || !r6Template){
+    const empty = new THREE.Group();
+    empty.armPivotL = new THREE.Group(); empty.armPivotR = new THREE.Group();
+    empty.legPivotL = new THREE.Group(); empty.legPivotR = new THREE.Group();
+    return empty;
+  }
+  const clone = THREE.SkeletonUtils.clone(r6Template);
+  clone.traverse(o=>{
+    if(o.isMesh){
+      if(Array.isArray(o.material)){
+        o.material = o.material.map(m=>{
+          const c = m.clone();
+          if(/torso/i.test(m.name)) c.color.set(bodyColor);
+          return c;
+        });
+      } else if(o.material){
+        const c = o.material.clone();
+        if(/torso/i.test(o.material.name)) c.color.set(bodyColor);
+        o.material = c;
+      }
+    }
+  });
+  clone.armPivotL = clone.getObjectByName('Left Arm');
+  clone.armPivotR = clone.getObjectByName('Right Arm');
+  clone.legPivotL = clone.getObjectByName('Left Leg');
+  clone.legPivotR = clone.getObjectByName('Right Leg');
+  return clone;
+}
+
+/* ================= AKSESUARLAR — yeni küçük gövdeye göre yeniden konumlandırıldı ================= */
+function build_ht1(color){ // Kaptan Şapkası
+  const g = new THREE.Group();
+  const mat = new THREE.MeshStandardMaterial({color});
+  const trimMat = new THREE.MeshStandardMaterial({color: shadeColor(color,-30)});
+  const goldMat = new THREE.MeshStandardMaterial({color:0xf2b705, metalness:0.5, roughness:0.3});
+  const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.29,0.32,0.045,22), mat);
+  brim.position.set(0,1.71,0);
+  const trim = new THREE.Mesh(new THREE.TorusGeometry(0.21,0.026,8,22), trimMat);
+  trim.position.set(0,1.755,0); trim.rotation.x = Math.PI/2;
+  const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.22,0.2,20), mat);
+  crown.position.set(0,1.85,0);
+  const topDisc = new THREE.Mesh(new THREE.CylinderGeometry(0.185,0.185,0.026,20), trimMat);
+  topDisc.position.set(0,1.955,0);
+  const badge = new THREE.Mesh(new THREE.SphereGeometry(0.03,10,10), goldMat);
+  badge.position.set(0,1.83,-0.21);
+  g.add(brim, trim, crown, topDisc, badge);
+  g.traverse(m=>{ if(m.isMesh) m.castShadow=true; });
+  return g;
+}
+function build_ht2(color){ // Taç
+  const g = new THREE.Group();
+  const mat = new THREE.MeshStandardMaterial({color, metalness:0.5, roughness:0.25});
+  const trimMat = new THREE.MeshStandardMaterial({color: shadeColor(color,-25), metalness:0.5, roughness:0.25});
+  const jewelMat = new THREE.MeshStandardMaterial({color:0xe0523f, emissive:0x5a1a10, metalness:0.3, roughness:0.2});
+  const bandLow = new THREE.Mesh(new THREE.CylinderGeometry(0.26,0.28,0.07,22), trimMat);
+  bandLow.position.set(0,1.72,0);
+  const band = new THREE.Mesh(new THREE.CylinderGeometry(0.25,0.25,0.14,22), mat);
+  band.position.set(0,1.80,0);
+  g.add(bandLow, band);
+  for(let i=0;i<6;i++){
+    const a = (i/6)*Math.PI*2;
+    const h = (i%2===0) ? 0.19 : 0.13;
+    const spike = new THREE.Mesh(new THREE.ConeGeometry(0.05,h,8), mat);
+    spike.position.set(Math.cos(a)*0.23, 1.87+h/2, Math.sin(a)*0.23);
+    g.add(spike);
+    if(i%2===0){
+      const jewel = new THREE.Mesh(new THREE.SphereGeometry(0.026,10,10), jewelMat);
+      jewel.position.set(Math.cos(a)*0.23, 1.87+h+0.02, Math.sin(a)*0.23);
+      g.add(jewel);
+    }
+  }
+  const frontJewel = new THREE.Mesh(new THREE.SphereGeometry(0.04,10,10), jewelMat);
+  frontJewel.position.set(0,1.80,-0.25);
+  g.add(frontJewel);
+  g.traverse(m=>{ if(m.isMesh) m.castShadow=true; });
+  return g;
+}
+function build_ht3(color){ // Bere
+  const g = new THREE.Group();
+  const mat = new THREE.MeshStandardMaterial({color});
+  const trimMat = new THREE.MeshStandardMaterial({color: shadeColor(color,-20)});
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(0.24,0.032,10,22), trimMat);
+  rim.position.set(0,1.65,0); rim.rotation.x = Math.PI/2;
+  const beret = new THREE.Mesh(new THREE.SphereGeometry(0.27,20,14), mat);
+  beret.scale.set(1.05,0.46,1.05);
+  beret.position.set(0.02,1.74,0.02);
+  const knot = new THREE.Mesh(new THREE.CylinderGeometry(0.026,0.026,0.05,10), trimMat);
+  knot.position.set(0.1,1.86,-0.07);
+  g.add(rim, beret, knot);
+  g.traverse(m=>{ if(m.isMesh) m.castShadow=true; });
+  return g;
+}
+function build_hr1(color){ // Siyah Kısa Saç — kafanın tamamını kaplayan yuvarlak kep
+  const g = new THREE.Group();
+  const mat = new THREE.MeshStandardMaterial({color, roughness:0.5});
+  const cap = new THREE.Mesh(new THREE.SphereGeometry(0.205,22,16,0,Math.PI*2,0,1.55), mat);
+  cap.position.set(0,HEAD_Y+0.01,0);
+  g.add(cap);
+  g.traverse(m=>{ if(m.isMesh) m.castShadow=true; });
+  return g;
+}
+function build_hr2(color){ // Sarı Uzun Saç — daha fazla kaplayan kep + arkadan sarkan tutam
+  const g = new THREE.Group();
+  const mat = new THREE.MeshStandardMaterial({color, roughness:0.5});
+  const cap = new THREE.Mesh(new THREE.SphereGeometry(0.21,22,16,0,Math.PI*2,0,1.75), mat);
+  cap.position.set(0,HEAD_Y+0.01,0);
+  const backFlap = new THREE.Mesh(new THREE.BoxGeometry(0.26,0.32,0.1), mat);
+  backFlap.position.set(0, HEAD_Y-0.28, 0.14);
+  backFlap.rotation.x = 0.12;
+  g.add(cap, backFlap);
+  g.traverse(m=>{ if(m.isMesh) m.castShadow=true; });
+  return g;
+}
+function build_hr3(color){ // Kahve Saç — orta uzunluk + yan ayrım detayı
+  const g = new THREE.Group();
+  const mat = new THREE.MeshStandardMaterial({color, roughness:0.5});
+  const cap = new THREE.Mesh(new THREE.SphereGeometry(0.207,22,16,0,Math.PI*2,0,1.62), mat);
+  cap.position.set(0,HEAD_Y+0.01,0);
+  const fringe = new THREE.Mesh(new THREE.BoxGeometry(0.15,0.09,0.17), mat);
+  fringe.position.set(0.09, HEAD_Y+0.11, -0.06);
+  fringe.rotation.z = 0.3;
+  g.add(cap, fringe);
+  g.traverse(m=>{ if(m.isMesh) m.castShadow=true; });
+  return g;
+}
+function build_fc1(color){ // Gülen Yüz
+  const g = new THREE.Group();
+  const darkMat = new THREE.MeshStandardMaterial({color:0x20242c});
+  const cheekMat = new THREE.MeshStandardMaterial({color:0xf29b8a, transparent:true, opacity:0.7});
+  const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.036,10,10), darkMat);
+  eyeL.position.set(-0.1,1.53,-0.19);
+  const eyeR = eyeL.clone(); eyeR.position.x = 0.1;
+  const browGeo = new THREE.BoxGeometry(0.075,0.015,0.018);
+  const browL = new THREE.Mesh(browGeo, darkMat);
+  browL.position.set(-0.1,1.585,-0.19); browL.rotation.z = 0.18;
+  const browR = new THREE.Mesh(browGeo, darkMat);
+  browR.position.set(0.1,1.585,-0.19); browR.rotation.z = -0.18;
+  const mouth = new THREE.Mesh(new THREE.TorusGeometry(0.075,0.014,8,14,Math.PI), darkMat);
+  mouth.position.set(0,1.415,-0.175);
+  mouth.rotation.z = Math.PI;
+  const cheekL = new THREE.Mesh(new THREE.CircleGeometry(0.03,12), cheekMat);
+  cheekL.position.set(-0.16,1.44,-0.185); cheekL.rotation.y = 0.4;
+  const cheekR = cheekL.clone(); cheekR.position.x = 0.16; cheekR.rotation.y = -0.4;
+  g.add(eyeL,eyeR,browL,browR,mouth,cheekL,cheekR);
+  return g;
+}
+function build_fc2(color){ // Havalı Gözlük
+  const g = new THREE.Group();
+  const mat = new THREE.MeshStandardMaterial({color, metalness:0.3, roughness:0.25});
+  const lensMat = new THREE.MeshStandardMaterial({color:0x151a20, metalness:0.6, roughness:0.15});
+  const lensL = new THREE.Mesh(new THREE.BoxGeometry(0.12,0.075,0.02), lensMat);
+  lensL.position.set(-0.1,1.51,-0.195);
+  const lensR = lensL.clone(); lensR.position.x = 0.1;
+  const frameL = new THREE.Mesh(new THREE.TorusGeometry(0.063,0.01,8,16), mat);
+  frameL.position.set(-0.1,1.51,-0.195);
+  const frameR = frameL.clone(); frameR.position.x = 0.1;
+  const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.05,0.015,0.015), mat);
+  bridge.position.set(0,1.51,-0.195);
+  const templeL = new THREE.Mesh(new THREE.BoxGeometry(0.135,0.014,0.014), mat);
+  templeL.position.set(-0.2,1.52,-0.1); templeL.rotation.y = 0.9;
+  const templeR = templeL.clone(); templeR.position.x = 0.2; templeR.rotation.y = -0.9;
+  g.add(lensL,lensR,frameL,frameR,bridge,templeL,templeR);
+  return g;
+}
+function build_fc3(color){ // Robot Vizör
+  const g = new THREE.Group();
+  const mat = new THREE.MeshStandardMaterial({color, metalness:0.5, roughness:0.3});
+  const trimMat = new THREE.MeshStandardMaterial({color: shadeColor(color,-30), metalness:0.6, roughness:0.25});
+  const visor = new THREE.Mesh(new THREE.BoxGeometry(0.35,0.115,0.035), mat);
+  visor.position.set(0,1.51,-0.19);
+  const trimTop = new THREE.Mesh(new THREE.BoxGeometry(0.37,0.018,0.025), trimMat);
+  trimTop.position.set(0,1.567,-0.185);
+  g.add(visor, trimTop);
+  for(let i=-1;i<=1;i++){
+    const dot = new THREE.Mesh(new THREE.SphereGeometry(0.014,8,8), new THREE.MeshStandardMaterial({color:0x66e0ff, emissive:0x2fa9c9}));
+    dot.position.set(i*0.085,1.51,-0.21);
+    g.add(dot);
+  }
+  const boltL = new THREE.Mesh(new THREE.CylinderGeometry(0.02,0.02,0.04,10), trimMat);
+  boltL.position.set(-0.19,1.51,-0.08); boltL.rotation.z = Math.PI/2;
+  const boltR = boltL.clone(); boltR.position.x = 0.19;
+  g.add(boltL, boltR);
+  return g;
+}
+function build_ac1(color){ // Kanat
+  const g = new THREE.Group();
+  const mat = new THREE.MeshStandardMaterial({color, side:THREE.DoubleSide, roughness:0.5});
+  const mountMat = new THREE.MeshStandardMaterial({color: shadeColor(color,-25)});
+  function makeWing(sign){
+    const wing = new THREE.Group();
+    const segs = [[0.32,0.13],[0.26,0.1],[0.18,0.075]];
+    segs.forEach(([len,w],i)=>{
+      const feather = new THREE.Mesh(new THREE.ConeGeometry(w,len,4,1,true), mat);
+      feather.scale.set(0.4,1,1);
+      feather.rotation.z = Math.PI/2.1;
+      feather.rotation.y = sign*(0.25+i*0.18);
+      feather.position.set(sign*(0.12+i*0.16), 1.18-i*0.08, 0.18+i*0.08);
+      wing.add(feather);
+    });
+    const mount = new THREE.Mesh(new THREE.BoxGeometry(0.08,0.11,0.065), mountMat);
+    mount.position.set(sign*0.12,1.24,0.18);
+    wing.add(mount);
+    return wing;
+  }
+  g.add(makeWing(-1), makeWing(1));
+  g.traverse(m=>{ if(m.isMesh) m.castShadow=true; });
+  return g;
+}
+function build_ac2(color){ // Sırt Çantası
+  const g = new THREE.Group();
+  const mat = new THREE.MeshStandardMaterial({color});
+  const trimMat = new THREE.MeshStandardMaterial({color: shadeColor(color,-25)});
+  const pack = new THREE.Mesh(new THREE.BoxGeometry(0.3,0.38,0.16), mat);
+  pack.position.set(0,0.98,0.26);
+  const pocket = new THREE.Mesh(new THREE.BoxGeometry(0.19,0.14,0.04), trimMat);
+  pocket.position.set(0,0.87,0.34);
+  const pouchL = new THREE.Mesh(new THREE.BoxGeometry(0.08,0.17,0.11), trimMat);
+  pouchL.position.set(-0.19,0.92,0.24);
+  const pouchR = pouchL.clone(); pouchR.position.x = 0.19;
+  const strapL = new THREE.Mesh(new THREE.BoxGeometry(0.055,0.4,0.04), trimMat);
+  strapL.position.set(-0.11,1.15,0.08); strapL.rotation.x = 0.25;
+  const strapR = strapL.clone(); strapR.position.x = 0.11;
+  g.add(pack, pocket, pouchL, pouchR, strapL, strapR);
+  g.traverse(m=>{ if(m.isMesh) m.castShadow=true; });
+  return g;
+}
+function build_ac3(color){ // Kılıç
+  const g = new THREE.Group();
+  const bladeMat = new THREE.MeshStandardMaterial({color:0xd8dde3, metalness:0.7, roughness:0.25});
+  const gripMat = new THREE.MeshStandardMaterial({color:0x3a2a1e, roughness:0.6});
+  const guardMat = new THREE.MeshStandardMaterial({color, metalness:0.5, roughness:0.3});
+  const blade = new THREE.Mesh(new THREE.BoxGeometry(0.04,0.55,0.012), bladeMat);
+  blade.position.set(0.46,0.85,0.15); blade.rotation.z = 0.45;
+  const ridge = new THREE.Mesh(new THREE.BoxGeometry(0.012,0.53,0.016), new THREE.MeshStandardMaterial({color:0xffffff, metalness:0.8, roughness:0.15}));
+  ridge.position.copy(blade.position); ridge.rotation.z = 0.45;
+  const guard = new THREE.Mesh(new THREE.BoxGeometry(0.16,0.035,0.04), guardMat);
+  guard.position.set(0.3,0.62,0.18); guard.rotation.z = 0.45;
+  const grip = new THREE.Mesh(new THREE.CylinderGeometry(0.02,0.02,0.13,10), gripMat);
+  grip.position.set(0.25,0.56,0.2); grip.rotation.z = 0.45;
+  const pommel = new THREE.Mesh(new THREE.SphereGeometry(0.028,10,10), guardMat);
+  pommel.position.set(0.2,0.51,0.22);
+  g.add(blade, ridge, guard, grip, pommel);
+  g.traverse(m=>{ if(m.isMesh) m.castShadow=true; });
+  return g;
+}
+function build_cl1(color){ // Ceket
+  const g = new THREE.Group();
+  const mat = new THREE.MeshStandardMaterial({color});
+  const trimMat = new THREE.MeshStandardMaterial({color: shadeColor(color,-25)});
+  const collar = new THREE.Mesh(new THREE.TorusGeometry(0.23,0.04,10,20), trimMat);
+  collar.position.set(0,1.30,0); collar.rotation.x = Math.PI/2;
+  const zipper = new THREE.Mesh(new THREE.BoxGeometry(0.026,0.55,0.013), trimMat);
+  zipper.position.set(0,0.98,-0.2);
+  for(let i=0;i<3;i++){
+    const btn = new THREE.Mesh(new THREE.SphereGeometry(0.017,8,8), trimMat);
+    btn.position.set(0,1.14-i*0.15,-0.21);
+    g.add(btn);
+  }
+  const cuffL = new THREE.Mesh(new THREE.TorusGeometry(0.135,0.02,8,16), trimMat);
+  cuffL.position.set(-0.47,0.665,0); cuffL.rotation.x = Math.PI/2;
+  const cuffR = cuffL.clone(); cuffR.position.x = 0.47;
+  g.add(collar, zipper, cuffL, cuffR);
+  g.traverse(m=>{ if(m.isMesh) m.castShadow=true; });
+  return g;
+}
+function build_cl2(color){ // Zırh
+  const g = new THREE.Group();
+  const mat = new THREE.MeshStandardMaterial({color, metalness:0.4, roughness:0.35});
+  const trimMat = new THREE.MeshStandardMaterial({color:0xf2b705, metalness:0.5, roughness:0.3});
+  const chest = new THREE.Mesh(new THREE.BoxGeometry(0.58,0.5,0.12), mat);
+  chest.position.set(0,0.97,-0.21);
+  const emblem = new THREE.Mesh(new THREE.BoxGeometry(0.085,0.085,0.025), trimMat);
+  emblem.position.set(0,1.08,-0.275);
+  const shL = new THREE.Mesh(new THREE.BoxGeometry(0.24,0.19,0.24), mat);
+  shL.position.set(-0.48,1.30,0);
+  const shR = shL.clone(); shR.position.x = 0.48;
+  const belt = new THREE.Mesh(new THREE.BoxGeometry(0.7,0.1,0.4), trimMat);
+  belt.position.set(0,0.62,0);
+  const greaveL = new THREE.Mesh(new THREE.BoxGeometry(0.3,0.28,0.32), mat);
+  greaveL.position.set(-0.15,0.35,-0.02);
+  const greaveR = greaveL.clone(); greaveR.position.x = 0.15;
+  g.add(chest, emblem, shL, shR, belt, greaveL, greaveR);
+  g.traverse(m=>{ if(m.isMesh) m.castShadow=true; });
+  return g;
+}
+function build_cl3(color){ // Hoodie
+  const g = new THREE.Group();
+  const mat = new THREE.MeshStandardMaterial({color});
+  const stringMat = new THREE.MeshStandardMaterial({color:0xffffff, roughness:0.6});
+  const hood = new THREE.Mesh(new THREE.SphereGeometry(0.26,16,12,0,Math.PI*2,0,Math.PI/1.6), mat);
+  hood.position.set(0,1.5,0.08); hood.rotation.x = -0.25;
+  const pocket = new THREE.Mesh(new THREE.BoxGeometry(0.34,0.17,0.05), mat);
+  pocket.position.set(0,0.78,-0.2);
+  const stringL = new THREE.Mesh(new THREE.CylinderGeometry(0.01,0.01,0.15,6), stringMat);
+  stringL.position.set(-0.07,1.24,-0.2);
+  const stringR = stringL.clone(); stringR.position.x = 0.07;
+  const cuffL = new THREE.Mesh(new THREE.TorusGeometry(0.135,0.018,8,16), mat);
+  cuffL.position.set(-0.47,0.665,0); cuffL.rotation.x = Math.PI/2;
+  const cuffR = cuffL.clone(); cuffR.position.x = 0.47;
+  g.add(hood, pocket, stringL, stringR, cuffL, cuffR);
+  g.traverse(m=>{ if(m.isMesh) m.castShadow=true; });
+  return g;
+}
+const itemBuilders = { ht1:build_ht1, ht2:build_ht2, ht3:build_ht3, hr1:build_hr1, hr2:build_hr2, hr3:build_hr3,
+  fc1:build_fc1, fc2:build_fc2, fc3:build_fc3, ac1:build_ac1, ac2:build_ac2, ac3:build_ac3,
+  cl1:build_cl1, cl2:build_cl2, cl3:build_cl3 };
+
+function createCharacterMesh(){
+  const clothingItem = equippedItems.Clothing ? marketplaceItems.find(x=>x.id===equippedItems.Clothing) : null;
+  const bodyColor = clothingItem ? clothingItem.bg : '#e0523f';
+  const group = buildBaseAvatarGroup(bodyColor);
+  const shrinkFactor = { Hats:0.86, Hair:1, Faces:0.9, Accessories:1 };
+  ['Hats','Hair','Faces','Accessories'].forEach(slot=>{
+    const id = equippedItems[slot];
+    if(id && itemBuilders[id]){
+      const it = marketplaceItems.find(x=>x.id===id);
+      const built = itemBuilders[id](it.bg);
+      const f = shrinkFactor[slot];
+      if(f !== 1){
+        built.scale.set(f,f,f);
+        built.position.y = HEAD_Y*(1-f);
+      }
+      group.add(built);
+    }
+  });
+  if(clothingItem && itemBuilders[clothingItem.id]) group.add(itemBuilders[clothingItem.id](clothingItem.bg));
+  return group;
+}
+
+/* ---- 2D snapshot ikonları (mağaza/avatar listesi) ---- */
+const iconCache = {};
+function renderItemIconDataURL(id){
+  if(iconCache[id]) return iconCache[id];
+  const it = marketplaceItems.find(x=>x.id===id);
+  const size = 160;
+  const canvas = document.createElement('canvas');
+  canvas.width = size; canvas.height = size;
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
+  renderer.setSize(size,size,false);
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(35,1,0.05,20);
+  scene.add(new THREE.HemisphereLight(0xffffff,0x445533,1.3));
+  const dir = new THREE.DirectionalLight(0xffffff,0.6);
+  dir.position.set(2,3,3);
+  scene.add(dir);
+
+  let group;
+  if(it.cat === 'Clothing'){
+    group = buildBaseAvatarGroup(it.bg);
+    if(itemBuilders[it.id]) group.add(itemBuilders[it.id](it.bg));
+    camera.position.set(0,1.1,2.7);
+    camera.lookAt(0,0.95,0);
+    scene.add(group);
+    renderer.render(scene, camera);
+    const url = canvas.toDataURL('image/png');
+    iconCache[id] = url;
+    renderer.dispose();
+    return url;
+  } else {
+    group = itemBuilders[it.id] ? itemBuilders[it.id](it.bg) : new THREE.Group();
+    scene.add(group);
+    const box3 = new THREE.Box3().setFromObject(group);
+    const center = box3.getCenter(new THREE.Vector3());
+    const dims = box3.getSize(new THREE.Vector3());
+    const maxDim = Math.max(dims.x, dims.y, dims.z, 0.2);
+    camera.position.set(center.x, center.y, center.z + maxDim*3.0);
+    camera.lookAt(center);
+    renderer.render(scene, camera);
+    const url = canvas.toDataURL('image/png');
+    iconCache[id] = url;
+    renderer.dispose();
+    return url;
+  }
+}
+
+/* ---- Avatar büstü (Home showroom + navbar) — kafa+gövde+biraz kol, hafif çapraz açı, gri daire arkaplan ---- */
+let portraitURL = '';
+function renderFacePortraitDataURL(){
+  const size = 380;
+  const canvas = document.createElement('canvas');
+  canvas.width = size; canvas.height = size;
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias:true });
+  renderer.setSize(size,size,false);
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xd9d9d9);
+  const camera = new THREE.PerspectiveCamera(26,1,0.05,20);
+  scene.add(new THREE.HemisphereLight(0xffffff,0x4d6b3a,1.2));
+  const dir = new THREE.DirectionalLight(0xffffff,0.75);
+  dir.position.set(1.2,2,2.5);
+  scene.add(dir);
+
+  const bust = createCharacterMesh();
+  bust.rotation.y = 0.32;
+  scene.add(bust);
+
+  // Karakterden biraz daha uzak ve biraz daha yüksek bir kamera
+  camera.position.set(0, 1.55, 2.5);
+  camera.lookAt(0, 1.15, 0);
+  renderer.render(scene, camera);
+  const url = canvas.toDataURL('image/png');
+  renderer.dispose();
+  return url;
+}
+function updateFacePortraits(){
+  portraitURL = renderFacePortraitDataURL();
+  const navFace = document.getElementById('navFace');
+  const showroomFace = document.getElementById('showroomFace');
+  if(navFace) navFace.src = portraitURL;
+  if(showroomFace) showroomFace.src = portraitURL;
+}
+
+/* ---- Satın alma / giyim ---- */
+function renderMarketplace(){
+  const tabs = document.getElementById('catTabs');
+  tabs.innerHTML = '';
+  categories.forEach(cat=>{
+    const btn = document.createElement('button');
+    btn.className = 'cat-tab clickable' + (cat===activeCategory ? ' active' : '');
+    btn.textContent = categoryLabels[cat];
+    btn.onclick = ()=>{ activeCategory = cat; renderMarketplace(); };
+    tabs.appendChild(btn);
+  });
+  const grid = document.getElementById('marketGrid');
+  grid.innerHTML = '';
+  marketplaceItems.filter(it=>it.cat===activeCategory).forEach(it=>{
+    const owned = !!inventory[it.id];
+    const canAfford = robux >= it.price;
+    const card = document.createElement('div');
+    card.className = 'item-card';
+    card.innerHTML = `
+      <div class="item-icon" style="background:${it.bg}22;"><img src="${renderItemIconDataURL(it.id)}" alt="${it.name}"></div>
+      <div class="item-body">
+        <div class="item-name">${it.name}</div>
+        <button class="item-buy ${owned ? 'owned' : (canAfford ? '' : 'cant')} clickable" ${owned ? 'disabled' : ''}>
+          ${owned ? '✓ Sahipsin' : `🪙 ${it.price}`}
+        </button>
+      </div>`;
+    if(!owned){ card.querySelector('.item-buy').onclick = ()=> buyItem(it.id); }
+    grid.appendChild(card);
+  });
+}
+function buyItem(id){
+  const it = marketplaceItems.find(x=>x.id===id);
+  if(!it || inventory[id]) return;
+  if(robux < it.price){ showToast('Yetersiz Robux!'); return; }
+  robux -= it.price;
+  syncRobuxDisplays();
+  inventory[id] = true;
+  showToast(`${it.name} satın alındı!`);
+  renderMarketplace();
+  saveUserData();
+}
+function toggleEquip(id){
+  const it = marketplaceItems.find(x=>x.id===id);
+  if(!it || !inventory[id]) return;
+  equippedItems[it.cat] = (equippedItems[it.cat] === id) ? null : id;
+  refreshAllAvatarViews();
+  saveUserData();
+}
+function refreshAllAvatarViews(){
+  if(tycoonState.playerMesh) refreshPlayerMesh(tycoonState);
+  if(parkourState.playerMesh) refreshPlayerMesh(parkourState);
+  rebuildAvatarPreview();
+  updateFacePortraits();
+  if(document.getElementById('avatarScreen').classList.contains('active')) renderAvatarPicker();
+}
+function renderAvatarPicker(){
+  const tabs = document.getElementById('avatarCatTabs');
+  tabs.innerHTML = '';
+  avatarCategories.forEach(cat=>{
+    const btn = document.createElement('button');
+    btn.className = 'cat-tab clickable' + (cat===avatarActiveCategory ? ' active' : '');
+    btn.textContent = categoryLabels[cat];
+    btn.onclick = ()=>{ avatarActiveCategory = cat; renderAvatarPicker(); };
+    tabs.appendChild(btn);
+  });
+  const list = document.getElementById('avatarItemList');
+  const owned = Object.keys(inventory).map(id=>marketplaceItems.find(x=>x.id===id)).filter(it=>it && it.cat===avatarActiveCategory);
+  if(owned.length === 0){
+    list.innerHTML = `<div class="inv-empty">Bu kategoride ürünün yok.<br>Mağaza'dan satın alabilirsin.</div>`;
+    return;
+  }
+  list.innerHTML = '';
+  owned.forEach(it=>{
+    const equipped = equippedItems[it.cat] === it.id;
+    const row = document.createElement('div');
+    row.className = 'inv-row';
+    row.innerHTML = `
+      <div class="inv-icon" style="background:${it.bg}22;"><img src="${renderItemIconDataURL(it.id)}" alt="${it.name}"></div>
+      <div class="inv-info"><div class="n">${it.name}</div><div class="c">${categoryLabels[it.cat]}</div></div>
+      <button class="inv-toggle clickable ${equipped ? 'on' : 'off'}">${equipped ? 'Çıkar' : 'Giy'}</button>`;
+    row.querySelector('.inv-toggle').onclick = ()=> toggleEquip(it.id);
+    list.appendChild(row);
+  });
+}
+
+/* ---- Avatar Düzenleyici: boydan 360° döndürülebilir showroom ---- */
+let avatarInited = false, avatarScene, avatarCamera, avatarRenderer, avatarMesh, avatarDragging=false, avatarLastX=0, avatarAutoRotate=true;
+function initAvatarEditorOnce(){
+  if(avatarInited) return;
+  avatarInited = true;
+  const canvas = document.getElementById('avatarCanvas');
+  avatarRenderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
+  avatarScene = new THREE.Scene();
+  avatarCamera = new THREE.PerspectiveCamera(40, 1, 0.1, 50);
+  avatarCamera.position.set(0, 1.25, 3.2);
+  avatarCamera.lookAt(0, 0.95, 0);
+  avatarScene.add(new THREE.HemisphereLight(0xffffff, 0x445533, 1.1));
+  const dir = new THREE.DirectionalLight(0xffffff, 0.7);
+  dir.position.set(3,5,4);
+  avatarScene.add(dir);
+  const floor = new THREE.Mesh(new THREE.CircleGeometry(1.6,28), new THREE.MeshStandardMaterial({color:0x5aa563}));
+  floor.rotation.x = -Math.PI/2;
+  avatarScene.add(floor);
+  avatarMesh = createCharacterMesh();
+  avatarScene.add(avatarMesh);
+
+  canvas.addEventListener('pointerdown', e=>{ avatarDragging=true; avatarAutoRotate=false; avatarLastX=e.clientX; });
+  window.addEventListener('pointerup', ()=> avatarDragging=false);
+  window.addEventListener('pointermove', e=>{
+    if(!avatarDragging) return;
+    avatarMesh.rotation.y += (e.clientX-avatarLastX)*0.01;
+    avatarLastX = e.clientX;
+  });
+  requestAnimationFrame(loopAvatar);
+}
+function resizeAvatarCanvas(){
+  const canvas = document.getElementById('avatarCanvas');
+  const w = canvas.clientWidth || 320, h = canvas.clientHeight || 380;
+  avatarRenderer.setSize(w, h, false);
+  avatarCamera.aspect = w/h;
+  avatarCamera.updateProjectionMatrix();
+}
+function loopAvatar(){
+  if(document.getElementById('avatarScreen').classList.contains('active')){
+    if(avatarAutoRotate) avatarMesh.rotation.y += 0.01;
+    avatarRenderer.render(avatarScene, avatarCamera);
+  }
+  requestAnimationFrame(loopAvatar);
+}
+function rebuildAvatarPreview(){
+  if(!avatarInited) return;
+  const rotY = avatarMesh.rotation.y;
+  avatarScene.remove(avatarMesh);
+  avatarMesh = createCharacterMesh();
+  avatarMesh.rotation.y = rotY;
+  avatarScene.add(avatarMesh);
+}
+
+/* ============================================================
+   PAYLAŞILAN OYUN KONTROLCÜSÜ (Tycoon + Parkour ikisi de kullanır)
+   ============================================================ */
+const GRAVITY = -30, JUMP_SPEED = 11, MOVE_SPEED = 7.5;
+const CAM_DIST_MIN = 2.5, CAM_DIST_MAX = 18;
+const keys = {};
+window.addEventListener('keydown', e=>{ keys[e.key.toLowerCase()] = true; });
+window.addEventListener('keyup', e=>{ keys[e.key.toLowerCase()] = false; });
+
+function newGameState(){
+  return {
+    scene:null, camera:null, renderer:null, canvas:null, playerMesh:null,
+    player3D:{x:0,y:0,z:0,facing:0},
+    cameraYaw:0, cameraPitch:0.45, camDist:7, camDistTarget:7,
+    velocityY:0, grounded:true, walkPhase:0,
+    rightMouseDown:false, lastMouseX:0, lastMouseY:0,
+    joyActive:false, joyDX:0, joyDY:0,
+    inited:false
+  };
+}
+const tycoonState = newGameState();
+const parkourState = newGameState();
+
+function bindCameraControls(state, canvas){
+  canvas.addEventListener('contextmenu', e=> e.preventDefault());
+  canvas.addEventListener('mousedown', e=>{
+    if(e.button === 2){ state.rightMouseDown = true; state.lastMouseX = e.clientX; state.lastMouseY = e.clientY; }
+  });
+  window.addEventListener('mouseup', e=>{ if(e.button === 2) state.rightMouseDown = false; });
+  window.addEventListener('mouseleave', ()=>{ state.rightMouseDown = false; });
+  window.addEventListener('blur', ()=>{ state.rightMouseDown = false; });
+  window.addEventListener('mousemove', e=>{
+    if(!state.rightMouseDown) return;
+    const dx = e.clientX - state.lastMouseX, dy = e.clientY - state.lastMouseY;
+    state.lastMouseX = e.clientX; state.lastMouseY = e.clientY;
+    state.cameraYaw -= dx * 0.006;
+    state.cameraPitch += dy * 0.006;
+    state.cameraPitch = Math.max(-1.45, Math.min(1.45, state.cameraPitch));
+  });
+  canvas.addEventListener('wheel', e=>{
+    e.preventDefault();
+    state.camDistTarget += (e.deltaY > 0 ? 1 : -1) * 0.9;
+    state.camDistTarget = Math.max(CAM_DIST_MIN, Math.min(CAM_DIST_MAX, state.camDistTarget));
+  }, { passive:false });
+}
+function doJump(state){ if(state.grounded){ state.velocityY = JUMP_SPEED; state.grounded = false; } }
+
+function updateMovementAndCamera(state, dt){
+  let mx=0, mz=0;
+  if(keys['w']||keys['arrowup']) mz -= 1;
+  if(keys['s']||keys['arrowdown']) mz += 1;
+  if(keys['a']||keys['arrowleft']) mx -= 1;
+  if(keys['d']||keys['arrowright']) mx += 1;
+  if(state.joyActive){ mx = state.joyDX; mz = state.joyDY; }
+  const len = Math.hypot(mx,mz);
+  if(len > 0){ mx/=len; mz/=len; }
+
+  const forward = new THREE.Vector3(Math.sin(state.cameraYaw), 0, Math.cos(state.cameraYaw));
+  const right = new THREE.Vector3(-Math.cos(state.cameraYaw), 0, Math.sin(state.cameraYaw));
+  const moveDir = new THREE.Vector3();
+  moveDir.addScaledVector(forward, -mz);
+  moveDir.addScaledVector(right, mx);
+  if(moveDir.length() > 0.001){
+    moveDir.normalize();
+    state.player3D.x += moveDir.x * MOVE_SPEED * dt;
+    state.player3D.z += moveDir.z * MOVE_SPEED * dt;
+    state.player3D.facing = Math.atan2(moveDir.x, moveDir.z);
+  }
+  return moveDir;
+}
+function applyCameraFollow(state){
+  const dist = state.camDist;
+  const camX = state.player3D.x - Math.sin(state.cameraYaw)*dist*Math.cos(state.cameraPitch);
+  const camZ = state.player3D.z - Math.cos(state.cameraYaw)*dist*Math.cos(state.cameraPitch);
+  const camY = state.player3D.y + 2 + dist*Math.sin(state.cameraPitch);
+  state.camera.position.set(camX,camY,camZ);
+  state.camera.lookAt(state.player3D.x, state.player3D.y+1.4, state.player3D.z);
+}
+function shortestAngleLerp(current, target, t){
+  let diff = ((target - current + Math.PI) % (Math.PI*2)) - Math.PI;
+  if(diff < -Math.PI) diff += Math.PI*2;
+  return current + diff * t;
+}
+function lerpRot(pivot, target, dt, speed){
+  pivot.rotation.x += (target - pivot.rotation.x) * Math.min(1, dt*speed);
+}
+/* Roblox R6 tarzı yürüme animasyonu + iki fazlı zıplama (yükselirken kollar kafaya kadar çıkar, düşerken iner). R6 olduğu için zıplarken bacaklar OYNAMAZ. */
+function animateCharacterLimbs(mesh, dt, isMoving, isGrounded, velY, walkPhaseRef){
+  if(!mesh.armPivotL) return;
+  const WALK_SPEED_HZ = 8, MAX_SWING = 0.9, LERP = 10, JUMP_LERP = 14;
+  if(!isGrounded){
+    if(velY > 0){
+      lerpRot(mesh.armPivotL, 2.7, dt, JUMP_LERP);
+      lerpRot(mesh.armPivotR, 2.7, dt, JUMP_LERP);
+    } else {
+      lerpRot(mesh.armPivotL, 0, dt, JUMP_LERP);
+      lerpRot(mesh.armPivotR, 0, dt, JUMP_LERP);
+    }
+    // Bacaklar zıplarken sabit kalır (R6)
+  } else if(isMoving){
+    walkPhaseRef.v += dt * WALK_SPEED_HZ;
+    const swing = Math.sin(walkPhaseRef.v) * MAX_SWING;
+    lerpRot(mesh.armPivotL, swing, dt, LERP);
+    lerpRot(mesh.armPivotR, -swing, dt, LERP);
+    lerpRot(mesh.legPivotL, -swing, dt, LERP);
+    lerpRot(mesh.legPivotR, swing, dt, LERP);
+  } else {
+    walkPhaseRef.v = 0;
+    lerpRot(mesh.armPivotL, 0, dt, LERP);
+    lerpRot(mesh.armPivotR, 0, dt, LERP);
+    lerpRot(mesh.legPivotL, 0, dt, LERP);
+    lerpRot(mesh.legPivotR, 0, dt, LERP);
+  }
+}
+function applyPlayerTransform(state, dt, isMoving){
+  state.playerMesh.position.set(state.player3D.x, state.player3D.y, state.player3D.z);
+  const targetFacing = state.player3D.facing + Math.PI;
+  state.playerMesh.rotation.y = shortestAngleLerp(state.playerMesh.rotation.y, targetFacing, Math.min(1, dt*16));
+  if(!state._walkPhaseRef) state._walkPhaseRef = { v:0 };
+  animateCharacterLimbs(state.playerMesh, dt, isMoving, state.grounded, state.velocityY, state._walkPhaseRef);
+  state.camDist += (state.camDistTarget - state.camDist) * Math.min(1, dt*18);
+}
+function refreshPlayerMesh(state){
+  if(!state.scene || !state.playerMesh) return;
+  const pos = state.playerMesh.position.clone();
+  const rotY = state.playerMesh.rotation.y;
+  state.scene.remove(state.playerMesh);
+  state.playerMesh = createCharacterMesh();
+  state.playerMesh.position.copy(pos);
+  state.playerMesh.rotation.y = rotY;
+  state.scene.add(state.playerMesh);
+}
+function setupJoystick(baseEl, stickEl, state){
+  let originX, originY;
+  function start(){
+    state.joyActive = true;
+    const r = baseEl.getBoundingClientRect();
+    originX = r.left + r.width/2; originY = r.top + r.height/2;
+  }
+  function move(e){
+    if(!state.joyActive) return;
+    const touch = e.touches ? e.touches[0] : e;
+    let dx = touch.clientX - originX, dy = touch.clientY - originY;
+    const max = 40, d = Math.hypot(dx,dy);
+    if(d > max){ dx = dx/d*max; dy = dy/d*max; }
+    stickEl.style.left = (35+dx)+'px';
+    stickEl.style.top = (35+dy)+'px';
+    state.joyDX = dx/max; state.joyDY = dy/max;
+  }
+  function end(){
+    state.joyActive=false; state.joyDX=0; state.joyDY=0;
+    stickEl.style.left='35px'; stickEl.style.top='35px';
+  }
+  baseEl.addEventListener('touchstart', start);
+  baseEl.addEventListener('touchmove', move);
+  baseEl.addEventListener('touchend', end);
+}
+
+/* ============================================================
+   COIN TYCOON 3D
+   ============================================================ */
+const GROUND_SIZE = 60;
+let plots3D = [];
+let cash = 0, cashPerSec = 0;
+let nearPlot3D = null;
+let lastTimeThree = 0;
+const cashDisplay = document.getElementById('cashDisplay');
+const rateDisplay = document.getElementById('rateDisplay');
+const promptBox = document.getElementById('promptBox');
+
+function startTycoon(){
+  hideAllScreens();
+  document.getElementById('game').classList.add('active');
+  initTycoonOnce();
+}
+function initTycoonOnce(){
+  if(tycoonState.inited) return;
+  tycoonState.inited = true;
+  const canvas = document.getElementById('gameCanvas3d');
+  tycoonState.canvas = canvas;
+  tycoonState.renderer = new THREE.WebGLRenderer({ canvas, antialias:true });
+  tycoonState.renderer.setSize(window.innerWidth, window.innerHeight);
+  tycoonState.renderer.shadowMap.enabled = true;
+
+  tycoonState.scene = new THREE.Scene();
+  tycoonState.scene.background = new THREE.Color(0x8ecbf0);
+  tycoonState.scene.fog = new THREE.Fog(0x8ecbf0, 35, 110);
+  tycoonState.camera = new THREE.PerspectiveCamera(65, window.innerWidth/window.innerHeight, 0.1, 500);
+  tycoonState.player3D.z = 10;
+
+  tycoonState.scene.add(new THREE.HemisphereLight(0xffffff, 0x4d6b3a, 0.9));
+  const sun = new THREE.DirectionalLight(0xfff3d6, 1.15);
+  sun.position.set(30,50,20);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(2048,2048);
+  sun.shadow.camera.left=-40; sun.shadow.camera.right=40; sun.shadow.camera.top=40; sun.shadow.camera.bottom=-40;
+  tycoonState.scene.add(sun);
+
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(GROUND_SIZE, GROUND_SIZE), new THREE.MeshStandardMaterial({ color:0x5aa563 }));
+  ground.rotation.x = -Math.PI/2;
+  ground.receiveShadow = true;
+  tycoonState.scene.add(ground);
+  const grid = new THREE.GridHelper(GROUND_SIZE, 30, 0x3f7f49, 0x4a8f55);
+  grid.position.y = 0.01;
+  tycoonState.scene.add(grid);
+
+  tycoonState.playerMesh = createCharacterMesh();
+  tycoonState.scene.add(tycoonState.playerMesh);
+
+  setupPlots3D();
+  const collector = new THREE.Mesh(new THREE.CylinderGeometry(2,2,0.6,24), new THREE.MeshStandardMaterial({color:0xf2b705}));
+  collector.position.set(0, 0.3, -14);
+  collector.castShadow = true;
+  tycoonState.scene.add(collector);
+
+  window.addEventListener('resize', ()=> onResizeGame(tycoonState));
+  bindCameraControls(tycoonState, canvas);
+  window.addEventListener('keydown', e=>{
+    if(!document.getElementById('game').classList.contains('active')) return;
+    if(e.key === ' '){ e.preventDefault(); doJump(tycoonState); }
+    if(e.key.toLowerCase()==='e'){ tryBuy(); }
+  });
+  setupJoystick(document.getElementById('joyBase'), document.getElementById('joyStick'), tycoonState);
+  lastCashTick = Date.now();
+  setInterval(()=>{
+    const now = Date.now();
+    const elapsed = (now-lastCashTick)/1000;
+    cash += cashPerSec*elapsed;
+    lastCashTick = now;
+  }, 1000);
+  requestAnimationFrame(loopThree);
+}
+function onResizeGame(state){
+  if(!state.camera) return;
+  state.camera.aspect = window.innerWidth/window.innerHeight;
+  state.camera.updateProjectionMatrix();
+  state.renderer.setSize(window.innerWidth, window.innerHeight);
+}
+let lastCashTick = Date.now();
+
+function setupPlots3D(){
+  plots3D.length = 0;
+  const cols=4, rows=2, gapX=6, gapZ=6;
+  const startX = -((cols-1)*gapX)/2, startZ = -4;
+  const baseCost = 50;
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      const idx = r*cols+c;
+      const px = startX + c*gapX, pz = startZ + r*gapZ;
+      const data = { owned:false, cost: Math.round(baseCost*Math.pow(1.6, idx)), income: 2+idx*1.5, dropTimer:0 };
+      const pad = new THREE.Mesh(new THREE.BoxGeometry(3,0.15,3), new THREE.MeshStandardMaterial({color:0xffe27a, transparent:true, opacity:0.85}));
+      pad.position.set(px,0.075,pz);
+      pad.receiveShadow = true;
+      tycoonState.scene.add(pad);
+      const tower = new THREE.Mesh(new THREE.CylinderGeometry(0.9,1.1,1.6,10), new THREE.MeshStandardMaterial({color:0x2f8fe0}));
+      tower.position.set(px,0.8,pz);
+      tower.visible = false;
+      tower.castShadow = true;
+      tycoonState.scene.add(tower);
+      const cap = new THREE.Mesh(new THREE.SphereGeometry(0.4,14,14), new THREE.MeshStandardMaterial({color:0xf2b705}));
+      cap.position.set(px,1.75,pz);
+      cap.visible = false;
+      tycoonState.scene.add(cap);
+      const label = document.createElement('div');
+      label.className = 'plot-label3d';
+      document.getElementById('game').appendChild(label);
+      plots3D.push({ data, pad, tower, cap, label, x:px, z:pz, halfX:1.5, halfZ:1.5 });
+    }
+  }
+}
+function tryBuy(){
+  if(!nearPlot3D || nearPlot3D.data.owned) return;
+  if(robux >= nearPlot3D.data.cost){
+    robux -= nearPlot3D.data.cost;
+    syncRobuxDisplays();
+    nearPlot3D.data.owned = true;
+    nearPlot3D.tower.visible = true;
+    nearPlot3D.cap.visible = true;
+    nearPlot3D.pad.material.color.set(0x3a3f8f);
+    cashPerSec += nearPlot3D.data.income;
+    saveUserData();
+  }
+}
+function updateNearPlot3D(){
+  nearPlot3D = null;
+  let best = 3.2;
+  for(const p of plots3D){
+    if(p.data.owned) continue;
+    const d = Math.hypot(tycoonState.player3D.x-p.x, tycoonState.player3D.z-p.z);
+    if(d < best){ best = d; nearPlot3D = p; }
+  }
+  if(nearPlot3D){
+    promptBox.classList.add('show');
+    promptBox.innerHTML = robux >= nearPlot3D.data.cost
+      ? `Dropper satın al <span class="key">E</span> — 🪙 ${nearPlot3D.data.cost}`
+      : `Yetersiz coin — 🪙 ${nearPlot3D.data.cost} gerekli`;
+    document.getElementById('mobileBuyBtn').style.display = 'block';
+  } else {
+    promptBox.classList.remove('show');
+    document.getElementById('mobileBuyBtn').style.display = 'none';
+  }
+}
+function updateLabels3D(){
+  for(const p of plots3D){
+    if(p.data.owned){ p.label.style.display='none'; continue; }
+    const vector = new THREE.Vector3(p.x, 1.3, p.z);
+    vector.project(tycoonState.camera);
+    if(vector.z > 1){ p.label.style.display='none'; continue; }
+    p.label.style.display = 'block';
+    p.label.style.left = ((vector.x*0.5+0.5)*window.innerWidth)+'px';
+    p.label.style.top = ((-vector.y*0.5+0.5)*window.innerHeight)+'px';
+    p.label.textContent = `🪙 ${p.data.cost}`;
+  }
+}
+function resolveBoxCollision(pl, p){
+  const closestX = Math.max(p.x-p.halfX, Math.min(pl.x, p.x+p.halfX));
+  const closestZ = Math.max(p.z-p.halfZ, Math.min(pl.z, p.z+p.halfZ));
+  const dx = pl.x-closestX, dz = pl.z-closestZ;
+  const distSq = dx*dx+dz*dz;
+  const r = 0.5;
+  if(distSq < r*r){
+    const dist = Math.sqrt(distSq) || 0.001;
+    const push = (r-dist);
+    pl.x += (dx/dist)*push;
+    pl.z += (dz/dist)*push;
+  }
+}
+function updateTycoon(dt){
+  const moveDir = updateMovementAndCamera(tycoonState, dt);
+  const half = GROUND_SIZE/2 - 1;
+  tycoonState.player3D.x = Math.max(-half, Math.min(half, tycoonState.player3D.x));
+  tycoonState.player3D.z = Math.max(-half, Math.min(half, tycoonState.player3D.z));
+
+  tycoonState.velocityY += GRAVITY * dt;
+  tycoonState.player3D.y += tycoonState.velocityY * dt;
+  if(tycoonState.player3D.y <= 0){ tycoonState.player3D.y = 0; tycoonState.velocityY = 0; tycoonState.grounded = true; } else { tycoonState.grounded = false; }
+
+  for(const p of plots3D){ if(p.data.owned) resolveBoxCollision(tycoonState.player3D, p); }
+
+  applyPlayerTransform(tycoonState, dt, moveDir.length() > 0.001);
+  applyCameraFollow(tycoonState);
+
+  const now = Date.now();
+  cash += cashPerSec * (now-lastCashTick)/1000;
+  lastCashTick = now;
+  for(const p of plots3D){
+    if(!p.data.owned) continue;
+    p.cap.rotation.y += dt*1.2;
+  }
+  cashDisplay.textContent = Math.floor(cash);
+  rateDisplay.textContent = `(+${cashPerSec.toFixed(1)}/sn)`;
+
+  updateNearPlot3D();
+  updateLabels3D();
+}
+function loopThree(t){
+  if(!lastTimeThree) lastTimeThree = t;
+  const dt = Math.min((t-lastTimeThree)/1000, 0.05);
+  lastTimeThree = t;
+  if(document.getElementById('game').classList.contains('active')){
+    updateTycoon(dt);
+    tycoonState.renderer.render(tycoonState.scene, tycoonState.camera);
+  }
+  requestAnimationFrame(loopThree);
+}
+
+/* ============================================================
+   PARKOUR RUSH — yeni, gerçek platform oyunu
+   ============================================================ */
+const parkourPlatformDefs = [
+  {x:0,   y:0,    z:14,  w:4,   d:4,   start:true, checkpoint:true},
+  {x:0,   y:0.5,  z:9,   w:2,   d:2},
+  {x:2.6, y:1.1,  z:5,   w:1.8, d:1.8},
+  {x:0,   y:1.7,  z:1,   w:1.6, d:1.6},
+  {x:-2.6,y:2.3,  z:-3,  w:1.6, d:1.6, checkpoint:true},
+  {x:0,   y:3.0,  z:-7,  w:1.4, d:1.4, moving:true, axis:'x', range:2.6, speed:1.1},
+  {x:3,   y:3.6,  z:-11, w:1.4, d:1.4},
+  {x:0,   y:4.2,  z:-15, w:1.4, d:1.4, checkpoint:true},
+  {x:-3,  y:4.9,  z:-19, w:1.4, d:1.4, moving:true, axis:'y', range:0.9, speed:1.6},
+  {x:0,   y:5.6,  z:-23, w:1.3, d:1.3},
+  {x:0,   y:5.6,  z:-27, w:1.3, d:1.3, moving:true, axis:'x', range:1.8, speed:1.4},
+  {x:0,   y:6.2,  z:-31, w:5,   d:5,   finish:true},
+];
+let parkourPlatforms = [];
+let parkourStartTime = 0, parkourFinished = false, parkourLastCheckpoint = {x:0,y:0,z:14};
+
+function startParkour(){
+  hideAllScreens();
+  document.getElementById('parkourGame').classList.add('active');
+  initParkourOnce();
+  restartParkour();
+}
+function initParkourOnce(){
+  if(parkourState.inited) return;
+  parkourState.inited = true;
+  const canvas = document.getElementById('parkourCanvas3d');
+  parkourState.canvas = canvas;
+  parkourState.renderer = new THREE.WebGLRenderer({ canvas, antialias:true });
+  parkourState.renderer.setSize(window.innerWidth, window.innerHeight);
+  parkourState.renderer.shadowMap.enabled = true;
+
+  parkourState.scene = new THREE.Scene();
+  parkourState.scene.background = new THREE.Color(0x8ecbf0);
+  parkourState.scene.fog = new THREE.Fog(0x8ecbf0, 40, 130);
+  parkourState.camera = new THREE.PerspectiveCamera(65, window.innerWidth/window.innerHeight, 0.1, 500);
+
+  parkourState.scene.add(new THREE.HemisphereLight(0xffffff, 0x4d6b3a, 0.95));
+  const sun = new THREE.DirectionalLight(0xfff3d6, 1.2);
+  sun.position.set(20,50,30);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(2048,2048);
+  sun.shadow.camera.left=-30; sun.shadow.camera.right=30; sun.shadow.camera.top=30; sun.shadow.camera.bottom=-30;
+  parkourState.scene.add(sun);
+
+  parkourPlatforms = parkourPlatformDefs.map(def=>{
+    let color = 0x8a8f99;
+    if(def.start) color = 0x2eb872;
+    if(def.checkpoint) color = 0xf2b705;
+    if(def.finish) color = 0xe0523f;
+    if(def.moving) color = 0x2f8fe0;
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(def.w,0.4,def.d), new THREE.MeshStandardMaterial({color}));
+    mesh.position.set(def.x, def.y-0.2, def.z);
+    mesh.castShadow = true; mesh.receiveShadow = true;
+    parkourState.scene.add(mesh);
+    if(def.finish){
+      const flag = new THREE.Mesh(new THREE.ConeGeometry(0.4,1,4), new THREE.MeshStandardMaterial({color:0xffffff}));
+      flag.position.set(0, def.y+0.7, 0);
+      mesh.add(flag);
+    }
+    if(def.checkpoint || def.start){
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(def.w*0.35,0.05,8,20), new THREE.MeshStandardMaterial({color:0xffffff, emissive:0x333333}));
+      ring.position.set(0, 0.35, 0);
+      ring.rotation.x = Math.PI/2;
+      mesh.add(ring);
+    }
+    return { def, mesh, baseX:def.x, baseY:def.y, baseZ:def.z, visited:false };
+  });
+
+  parkourState.playerMesh = createCharacterMesh();
+  parkourState.scene.add(parkourState.playerMesh);
+
+  window.addEventListener('resize', ()=> onResizeGame(parkourState));
+  bindCameraControls(parkourState, canvas);
+  window.addEventListener('keydown', e=>{
+    if(!document.getElementById('parkourGame').classList.contains('active')) return;
+    if(e.key === ' '){ e.preventDefault(); doJump(parkourState); }
+  });
+  setupJoystick(document.getElementById('joyBaseParkour'), document.getElementById('joyStickParkour'), parkourState);
+  requestAnimationFrame(loopParkour);
+}
+function restartParkour(){
+  document.getElementById('parkourFinishOverlay').classList.remove('show');
+  const start = parkourPlatformDefs.find(p=>p.start);
+  parkourLastCheckpoint = {x:start.x, y:start.y+0.05, z:start.z};
+  parkourState.player3D.x = parkourLastCheckpoint.x;
+  parkourState.player3D.y = parkourLastCheckpoint.y;
+  parkourState.player3D.z = parkourLastCheckpoint.z;
+  parkourState.velocityY = 0;
+  parkourState.grounded = true;
+  parkourFinished = false;
+  parkourStartTime = performance.now();
+}
+function findSupportPlatform(player3D){
+  let best = null, bestTop = -Infinity;
+  for(const p of parkourPlatforms){
+    const mesh = p.mesh;
+    const halfW = p.def.w/2, halfD = p.def.d/2;
+    if(Math.abs(player3D.x - mesh.position.x) <= halfW+0.15 && Math.abs(player3D.z - mesh.position.z) <= halfD+0.15){
+      const top = mesh.position.y + 0.2;
+      if(top > bestTop){ bestTop = top; best = p; }
+    }
+  }
+  if(best) return { top:bestTop, plat:best };
+  return null;
+}
+function updateParkour(dt){
+  const t = performance.now()/1000;
+  parkourPlatforms.forEach(p=>{
+    if(!p.def.moving) return;
+    if(p.def.axis === 'x') p.mesh.position.x = p.baseX + Math.sin(t*p.def.speed)*p.def.range;
+    else if(p.def.axis === 'y') p.mesh.position.y = (p.baseY-0.2) + Math.sin(t*p.def.speed)*p.def.range;
+    else p.mesh.position.z = p.baseZ + Math.sin(t*p.def.speed)*p.def.range;
+  });
+
+  const moveDir = updateMovementAndCamera(parkourState, dt);
+  parkourState.velocityY += GRAVITY * dt;
+  parkourState.player3D.y += parkourState.velocityY * dt;
+
+  const support = findSupportPlatform(parkourState.player3D);
+  if(support && parkourState.velocityY <= 0 && parkourState.player3D.y <= support.top + 0.12){
+    parkourState.player3D.y = support.top;
+    parkourState.velocityY = 0;
+    parkourState.grounded = true;
+    const def = support.plat.def;
+    if((def.checkpoint || def.start) && !parkourFinished){
+      parkourLastCheckpoint = {x:def.x, y:def.y+0.05, z:def.z};
+    }
+    if(def.finish && !parkourFinished){
+      parkourFinished = true;
+      const elapsed = ((performance.now()-parkourStartTime)/1000).toFixed(1);
+      document.getElementById('parkourFinishTime').textContent = `Süre: ${elapsed} sn`;
+      document.getElementById('parkourFinishOverlay').classList.add('show');
+      robux += 150; syncRobuxDisplays(); saveUserData();
+      showToast('+150 Robux — Parkur tamamlandı!');
+    }
+  } else {
+    parkourState.grounded = false;
+  }
+
+  if(parkourState.player3D.y < -8){
+    parkourState.player3D.x = parkourLastCheckpoint.x;
+    parkourState.player3D.y = parkourLastCheckpoint.y;
+    parkourState.player3D.z = parkourLastCheckpoint.z;
+    parkourState.velocityY = 0;
+  }
+
+  applyPlayerTransform(parkourState, dt, moveDir.length() > 0.001);
+  applyCameraFollow(parkourState);
+
+  if(!parkourFinished){
+    const elapsed = (performance.now()-parkourStartTime)/1000;
+    document.getElementById('parkourTimer').textContent = elapsed.toFixed(1)+' sn';
+  }
+}
+let lastTimeParkour = 0;
+function loopParkour(t){
+  if(!lastTimeParkour) lastTimeParkour = t;
+  const dt = Math.min((t-lastTimeParkour)/1000, 0.05);
+  lastTimeParkour = t;
+  if(document.getElementById('parkourGame').classList.contains('active')){
+    updateParkour(dt);
+    parkourState.renderer.render(parkourState.scene, parkourState.camera);
+  }
+  requestAnimationFrame(loopParkour);
+}
+
+/* ============ UYGULAMA BAŞLANGICI: önce R6 modeli yüklenir, sonra arayüz açılır ============ */
+logStep('Uygulama başlangıcı tetiklendi, loadR6Template çağrılıyor...');
+loadR6Template(()=>{
+  logStep('loadR6Template tamamlandı. r6Ready=' + r6Ready + ' r6LoadFailed=' + r6LoadFailed);
+  const overlay = document.getElementById('modelLoadingOverlay');
+  if(r6LoadFailed){
+    document.getElementById('modelLoadingText').textContent = 'Karakter modeli yüklenemedi.';
+    document.getElementById('modelLoadingSub').innerHTML = 'r6_rigged.fbx ve Head1_diff.png dosyalarının bu HTML dosyasıyla <b>aynı klasörde</b> olduğundan emin ol, sonra sayfayı yenile (F5). Yukarıdaki kırmızı kutudaki hata detayını bana gönderirsen kesin teşhis koyarım.';
+    return;
+  }
+  overlay.style.display = 'none';
+  updateFacePortraits();
+});
+</script>
+</body>
+</html>
